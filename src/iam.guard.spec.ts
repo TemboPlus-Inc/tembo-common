@@ -1,7 +1,7 @@
-import { IAMGuard } from './iam.guard';
+import { IAMGuard } from './iam.guard'
 
 describe('IamGuard', () => {
   it('should be defined', () => {
-    expect(new IAMGuard()).toBeDefined();
-  });
-});
+    expect(new IAMGuard()).toBeDefined()
+  })
+})

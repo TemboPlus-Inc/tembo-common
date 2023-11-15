@@ -1,3 +1,3 @@
-import { SetMetadata } from '@nestjs/common';
+import { Reflector } from '@nestjs/core'
 
-export const IAMAction = (...args: string[]) => SetMetadata('iam-action', args);
+export const IAMActions = Reflector.createDecorator<string[]>()

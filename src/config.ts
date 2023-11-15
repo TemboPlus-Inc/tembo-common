@@ -1,4 +1,4 @@
 export interface Config {
-  url: string;
-  resource: string;
+  url: string
+  resource: string
 }
