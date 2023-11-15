@@ -7,6 +7,10 @@
   "license": "UNLICENSED",
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:TemboPlus-Inc/tembo-iam-client.git"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
