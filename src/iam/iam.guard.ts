@@ -4,20 +4,17 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common'
-import {
-  AUTHORIZATION_HEADER_NAME,
-  IAM_CONFIG_OPTIONS,
-  REQUEST_ID_HEADER_NAME,
-} from './const'
+import { AUTHORIZATION_HEADER_NAME, REQUEST_ID_HEADER_NAME } from '../const'
 import { Request } from 'express'
-import { Config } from './config'
 import { Reflector } from '@nestjs/core'
 import { IAMActions as IAMActions } from './iam-actions.decorator'
+import { IAMClient } from './iam-client'
+import { ResourceInfo } from 'src/types/resource-info.type'
 
 @Injectable()
 export class IAMGuard implements CanActivate {
   constructor(
-    @Inject(IAM_CONFIG_OPTIONS) private readonly config: Config,
+    private readonly client: IAMClient,
     @Inject(Reflector.name)
     private readonly reflector: Reflector,
   ) {}
@@ -44,31 +41,16 @@ export class IAMGuard implements CanActivate {
       return false
     }
 
-    const payload = {
+    const info: ResourceInfo = {
       requestId,
       token,
       resource: {
-        kind: this.config.resource,
         id,
       },
       actions,
     }
 
-    const response = await fetch(this.config.url, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    }).catch((error) => {
-      console.log(error)
-      return undefined
-    })
-
-    if (!response || !response.ok) {
-      return false
-    }
-    const result = await response.json()
+    const result = await this.client.checkResource(info)
 
     // Ensure that all requested actions have been granted
     const accessGranted = actions.reduce((granted, action) => {
@@ -79,8 +61,8 @@ export class IAMGuard implements CanActivate {
     return accessGranted
   }
 
-  getToken(request: Request): string {
-    const authHeader: string = request.headers[AUTHORIZATION_HEADER_NAME]
+  private getToken(request: Request): string {
+    const authHeader = request.headers[AUTHORIZATION_HEADER_NAME] as string
     if (!authHeader) {
       return undefined
     }
@@ -94,7 +76,7 @@ export class IAMGuard implements CanActivate {
     return isValidFormat ? token : undefined
   }
 
-  getRequestId(request: Request): string {
+  private getRequestId(request: Request): string {
     const requestId: string = request.headers[REQUEST_ID_HEADER_NAME] as string
     return requestId ? requestId : undefined
   }
